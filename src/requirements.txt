@@ -1,0 +1,13 @@
+fastapi
+torch
+torchvision 
+pillow
+prometheus_client
+uvicorn 
+python-multipart 
+transformers 
+accelerate 
+bitsandbytes
+sentencepiece
+opencv-python 
+google-cloud-vision

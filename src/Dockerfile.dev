@@ -1,0 +1,13 @@
+FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+
+RUN apt update && apt install -y python3-pip git
+
+# Pip cache
+ENV PIP_CACHE_DIR=/root/.cache/pip
+
+WORKDIR /tmp
+COPY requirements.txt .
+RUN pip3 install --upgrade pip && pip3 install -r requirements.txt
+
+WORKDIR /app
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -1,0 +1,53 @@
+services:
+  app:
+    build:
+      context: . 
+      dockerfile: Dockerfile.dev
+    container_name: llama_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - pip-cache:/root/.cache/pip
+      - ./gcloud/service_account_key.json:/app/service_account_key.json:ro # :ro read-only
+    environment:
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/service_account_key.json # Define a variável de ambiente
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin  
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
+    
+volumes:
+  grafana-storage:
+  pip-cache:
